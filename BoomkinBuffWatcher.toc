@@ -1,0 +1,11 @@
+## Interface: 120100
+## Title: Boomkin Buff Watcher
+## Notes: Astral Power, Eclipse window, and buff tracking for Balance Druids.
+## Author: NerdyBertie
+## Version: @project-version@
+## SavedVariables: BoomkinBuffWatcherDB
+## X-Curse-Project-ID: 1699600
+## X-WoWI-ID: 27205
+## X-Wago-ID: aNDM046o
+
+BoomkinBuffWatcher.lua
