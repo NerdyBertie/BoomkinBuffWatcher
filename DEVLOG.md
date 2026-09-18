@@ -1,5 +1,24 @@
 # Development Log
 
+## 1.1.0 build notes
+- The "Hide outside of combat" setting went through three implementations
+  before landing on one that actually worked:
+  1. `Settings.RegisterAddOnSetting` + `Settings.CreateCheckbox` (the
+     newer "auto-binding" Settings API) — the checkbox rendered fine, but
+     the underlying value never reliably reflected in-game
+  2. Reading through `hideSetting:GetValue()` instead of the raw saved
+     table directly — still didn't work
+  3. A plain manual `CheckButton` with a direct read/write to
+     `BoomkinBuffWatcherDB` on click, matching the exact pattern already
+     proven working in ItemWatch's own published options panel — this
+     one worked immediately
+- Also found and fixed a real bug during this troubleshooting: settings
+  fields added after the first release stayed permanently `nil` for
+  existing users, since `BoomkinBuffWatcherDB = BoomkinBuffWatcherDB or
+  {defaults}` only applies when the whole saved table doesn't exist yet —
+  it doesn't backfill individual missing keys into an already-existing
+  table from an earlier version
+
 This is the blow-by-blow build history from before the first public release
 — every local test iteration, bug, and dead end. Kept for reference, not
 meant for the public-facing CHANGELOG.

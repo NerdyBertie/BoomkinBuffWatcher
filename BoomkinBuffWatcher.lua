@@ -9,6 +9,20 @@ local ADDON_NAME = ...
 
 local BALANCE_SPEC_ID = 1 -- Balance is spec index 1 for Druids (Balance, Feral, Guardian, Restoration)
 
+local function IsBalanceSpec()
+    local specIndex = GetSpecialization()
+    return specIndex == BALANCE_SPEC_ID
+end
+
+-- Mark of the Wild is available to every Druid spec, not just Balance — a
+-- player who respecs into Restoration, Guardian, or Feral still wants to know
+-- if it's up. So this checks class rather than spec, separately from the
+-- Balance-only checks used everywhere else in this file.
+local function IsDruid()
+    local _, class = UnitClass("player")
+    return class == "DRUID"
+end
+
 local SOLAR_TRIGGER = "Wrath"
 local LUNAR_TRIGGER = "Starfire"
 local CELESTIAL_TRIGGERS = {
@@ -17,11 +31,73 @@ local CELESTIAL_TRIGGERS = {
 }
 local ECLIPSE_DURATION = 15
 
-BoomkinBuffWatcherDB = BoomkinBuffWatcherDB or {
+-- The "or {}" below only helps a brand-new install with no saved table at
+-- all. An EXISTING saved table (from a version before this field existed)
+-- keeps its old contents as-is and never gets new keys added automatically
+-- — so any field added after the addon's first release needs to be
+-- explicitly backfilled here too, or it stays nil for existing users forever.
+local DEFAULTS = {
     point = "CENTER",
     x = 0,
     y = -150,
+    motwPoint = "CENTER",
+    motwX = 110,
+    motwY = -100,
+    hideOutOfCombat = true,
 }
+
+BoomkinBuffWatcherDB = BoomkinBuffWatcherDB or {}
+for key, value in pairs(DEFAULTS) do
+    if BoomkinBuffWatcherDB[key] == nil then
+        BoomkinBuffWatcherDB[key] = value
+    end
+end
+
+local RefreshOnHideCombatChanged -- forward declaration; assigned after RefreshVisibility is defined below
+
+-- ============================================================
+-- Settings panel
+-- ============================================================
+-- Built as a plain manual CheckButton with a direct read/write to
+-- BoomkinBuffWatcherDB, matching the pattern already proven working in
+-- ItemWatch's published options panel — rather than the newer
+-- Settings.RegisterAddOnSetting/CreateCheckbox auto-binding API, which
+-- did not reliably write through to the saved table in testing.
+
+local settingsPanel = CreateFrame("Frame")
+settingsPanel.name = "Boomkin Buff Watcher"
+
+local settingsTitle = settingsPanel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
+settingsTitle:SetPoint("TOPLEFT", 16, -16)
+settingsTitle:SetText("Boomkin Buff Watcher")
+
+local hideCombatCheck = CreateFrame("CheckButton", "BoomkinBuffWatcherHideCombatCheck", settingsPanel, "UICheckButtonTemplate")
+hideCombatCheck:SetPoint("TOPLEFT", settingsTitle, "BOTTOMLEFT", -2, -16)
+_G["BoomkinBuffWatcherHideCombatCheckText"]:SetText("Hide outside of combat")
+
+local hideCombatHint = settingsPanel:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+hideCombatHint:SetPoint("TOPLEFT", hideCombatCheck, "BOTTOMLEFT", 4, -4)
+hideCombatHint:SetWidth(420)
+hideCombatHint:SetJustifyH("LEFT")
+hideCombatHint:SetWordWrap(true)
+hideCombatHint:SetText("When on, the Astral Power/Eclipse HUD only appears in combat. Turn this off if you want it visible all the time -- useful for repositioning it without needing to be in a fight, e.g. with a controller. The Mark of the Wild reminder is unaffected either way, since it's meant to be checked before combat starts.")
+
+hideCombatCheck:SetScript("OnClick", function(self)
+    BoomkinBuffWatcherDB.hideOutOfCombat = self:GetChecked() and true or false
+    RefreshOnHideCombatChanged()
+end)
+
+-- Sync the checkbox's displayed state from the saved value every time the
+-- panel is opened, rather than trying to keep it continuously live-bound
+settingsPanel:SetScript("OnShow", function()
+    hideCombatCheck:SetChecked(BoomkinBuffWatcherDB.hideOutOfCombat)
+end)
+
+local settingsCategory
+if Settings and Settings.RegisterCanvasLayoutCategory then
+    settingsCategory = Settings.RegisterCanvasLayoutCategory(settingsPanel, settingsPanel.name)
+    Settings.RegisterAddOnCategory(settingsCategory)
+end
 
 -- ============================================================
 -- Frame setup
@@ -54,6 +130,26 @@ frame:SetBackdropBorderColor(0, 0, 0, 1)
 local eclipseText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
 eclipseText:SetPoint("TOP", frame, "TOP", 0, -4)
 
+-- Small radial cooldown-swipe timer, the same visual Blizzard uses for action
+-- bar cooldowns. This is NOT reading any secret/restricted data — the Eclipse
+-- window's start time and duration are values this addon generates itself by
+-- watching your own casts, so there's nothing here Blizzard's aura
+-- restrictions apply to.
+-- A plain backing square behind the swipe so it reads clearly as an icon-sized
+-- timer rather than an empty transparent wedge
+local eclipseCooldownBG = frame:CreateTexture(nil, "ARTWORK")
+eclipseCooldownBG:SetPoint("TOPLEFT", frame, "TOPLEFT", 4, -3)
+eclipseCooldownBG:SetSize(20, 20)
+eclipseCooldownBG:SetColorTexture(0.3, 0.3, 0.3, 0.8)
+eclipseCooldownBG:Hide()
+
+local eclipseCooldown = CreateFrame("Cooldown", nil, frame, "CooldownFrameTemplate")
+eclipseCooldown:SetSize(20, 20)
+eclipseCooldown:SetPoint("TOPLEFT", frame, "TOPLEFT", 4, -3)
+eclipseCooldown:SetHideCountdownNumbers(true) -- eclipseText already shows the seconds
+eclipseCooldown:SetReverse(true) -- countdown sweep drains from full to empty
+eclipseCooldown:Hide()
+
 -- Bottom row: the Astral Power bar itself
 local powerBar = CreateFrame("StatusBar", nil, frame)
 powerBar:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 2, 2)
@@ -82,6 +178,14 @@ apGlowBar:SetStatusBarColor(1, 0.85, 0.1, 0.7)
 -- ============================================================
 -- Mark of the Wild reminder
 -- ============================================================
+-- Available to every Druid spec, not just Balance, so this is gated on class
+-- rather than spec (see IsDruid() above) — a Restoration or Guardian Druid
+-- still wants to know if it's missing.
+--
+-- This also deliberately does NOT follow the main frame's combat-only
+-- visibility. The whole point of a pre-buff reminder is to catch it BEFORE
+-- combat starts, so it's its own small, independently draggable frame.
+--
 -- Outside combat, buff data is readable normally. In combat, most aura data
 -- goes secret, but some buffs (raid buffs among them) are explicitly kept
 -- readable. Either way, every check goes through pcall: a failed check means
@@ -90,9 +194,23 @@ apGlowBar:SetStatusBarColor(1, 0.85, 0.1, 0.7)
 
 local MOTW_SPELL_ID = 1126 -- Mark of the Wild
 
-local motwIcon = frame:CreateTexture(nil, "OVERLAY")
-motwIcon:SetSize(20, 20)
-motwIcon:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -2, -2)
+local motwFrame = CreateFrame("Frame", "BoomkinBuffWatcherMotwFrame", UIParent)
+motwFrame:SetSize(45, 45)
+motwFrame:SetPoint(BoomkinBuffWatcherDB.motwPoint, UIParent, BoomkinBuffWatcherDB.motwPoint, BoomkinBuffWatcherDB.motwX, BoomkinBuffWatcherDB.motwY)
+motwFrame:SetMovable(true)
+motwFrame:EnableMouse(true)
+motwFrame:RegisterForDrag("LeftButton")
+motwFrame:SetScript("OnDragStart", motwFrame.StartMoving)
+motwFrame:SetScript("OnDragStop", function(self)
+    self:StopMovingOrSizing()
+    local point, _, _, x, y = self:GetPoint()
+    BoomkinBuffWatcherDB.motwPoint = point
+    BoomkinBuffWatcherDB.motwX = x
+    BoomkinBuffWatcherDB.motwY = y
+end)
+
+local motwIcon = motwFrame:CreateTexture(nil, "OVERLAY")
+motwIcon:SetAllPoints(motwFrame)
 motwIcon:SetTexture("Interface\\Icons\\Spell_Nature_Regeneration")
 motwIcon:SetDesaturated(true)
 motwIcon:SetVertexColor(1, 0.2, 0.2)
@@ -108,6 +226,15 @@ local function CheckMarkOfTheWild()
         motwIcon:Hide()
     else
         motwIcon:Show()
+    end
+end
+
+local function RefreshMotwFrameVisibility()
+    if IsDruid() then
+        motwFrame:Show()
+        CheckMarkOfTheWild()
+    else
+        motwFrame:Hide()
     end
 end
 
@@ -197,6 +324,7 @@ end
 -- ============================================================
 
 local windowType = nil     -- "SOLAR" | "LUNAR" | "CELESTIAL"
+local windowStart = 0        -- GetTime() value the window began
 local windowExpiry = 0      -- GetTime() value the window ends
 
 local function StartWindow(kind, duration)
@@ -206,7 +334,12 @@ local function StartWindow(kind, duration)
         return
     end
     windowType = kind
-    windowExpiry = GetTime() + duration
+    windowStart = GetTime()
+    windowExpiry = windowStart + duration
+
+    eclipseCooldownBG:Show()
+    eclipseCooldown:Show()
+    eclipseCooldown:SetCooldown(windowStart, duration)
 end
 
 local function RefreshEclipseText()
@@ -227,6 +360,8 @@ local function RefreshEclipseText()
     else
         windowType = nil
         eclipseText:SetText("")
+        eclipseCooldownBG:Hide()
+        eclipseCooldown:Hide()
     end
 end
 
@@ -242,24 +377,21 @@ local function OnCastSucceeded(spellName)
 end
 
 -- ============================================================
--- Visibility: only show while playing Balance AND in combat
+-- Visibility: main HUD shows while playing Balance, and either in combat
+-- or the "hide outside of combat" setting is turned off
 -- ============================================================
 
-local function IsBalanceSpec()
-    local specIndex = GetSpecialization()
-    return specIndex == BALANCE_SPEC_ID
-end
-
 local function RefreshVisibility()
-    if IsBalanceSpec() and InCombatLockdown() then
+    local shouldShow = IsBalanceSpec() and (InCombatLockdown() or not BoomkinBuffWatcherDB.hideOutOfCombat)
+    if shouldShow then
         frame:Show()
         UpdateAstralPower()
         RefreshEclipseText()
-        CheckMarkOfTheWild()
     else
         frame:Hide()
     end
 end
+RefreshOnHideCombatChanged = RefreshVisibility
 
 -- Re-check overall visibility every second, independent of the frame's own
 -- shown/hidden state (a frame's OnUpdate script does not fire while that frame
@@ -267,24 +399,22 @@ end
 -- from being stuck hidden). This self-corrects if a transition event was ever
 -- missed, e.g. the addon loading mid-combat, so PLAYER_REGEN_DISABLED never
 -- fires that session.
-C_Timer.NewTicker(1, RefreshVisibility)
+C_Timer.NewTicker(1, function()
+    RefreshVisibility()
+    RefreshMotwFrameVisibility()
+end)
 
 -- Tick the eclipse countdown text once a second, pulse the glow bar's alpha every
--- frame, and re-check Mark of the Wild every couple of seconds. This one is safe
--- to leave on the frame's own OnUpdate, since it's only meant to run while the
--- frame is actually visible anyway.
+-- frame, and re-check watched procs a few times a second. This one is safe to
+-- leave on the main frame's own OnUpdate, since it's only meant to run while
+-- that frame is actually visible anyway (Mark of the Wild has its own
+-- independent frame and ticker above, precisely because it needs to keep
+-- working even while this frame is hidden).
 local tickElapsed = 0
-local motwElapsed = 0
 local procElapsed = 0
 frame:SetScript("OnUpdate", function(self, elapsed)
     local pulse = 0.5 + 0.5 * math.abs(math.sin(GetTime() * 3))
     apGlowBar:SetAlpha(pulse)
-
-    motwElapsed = motwElapsed + elapsed
-    if motwElapsed >= 2 then
-        motwElapsed = 0
-        CheckMarkOfTheWild()
-    end
 
     procElapsed = procElapsed + elapsed
     if procElapsed >= 0.5 then
@@ -318,8 +448,10 @@ print("|cff9370DBBoomkinBuffWatcher|r v" .. (C_AddOns.GetAddOnMetadata(ADDON_NAM
 frame:SetScript("OnEvent", function(self, event, unit, ...)
     if event == "PLAYER_ENTERING_WORLD" then
         RefreshVisibility()
+        RefreshMotwFrameVisibility()
     elseif event == "PLAYER_SPECIALIZATION_CHANGED" and unit == "player" then
         RefreshVisibility()
+        RefreshMotwFrameVisibility()
     elseif event == "PLAYER_REGEN_DISABLED" or event == "PLAYER_REGEN_ENABLED" then
         RefreshVisibility()
     elseif event == "UNIT_POWER_UPDATE" and unit == "player" then
@@ -351,7 +483,7 @@ SlashCmdList["BOOMKINBUFFWATCHER"] = function(msg)
         else
             print("|cff9370DBBoomkinBuffWatcher|r Window: none")
         end
-        print("|cff9370DBBoomkinBuffWatcher|r Spec check: " .. tostring(IsBalanceSpec()) .. " | In combat: " .. tostring(InCombatLockdown()) .. " | Frame shown: " .. tostring(frame:IsShown()))
+        print("|cff9370DBBoomkinBuffWatcher|r Spec check: " .. tostring(IsBalanceSpec()) .. " | In combat: " .. tostring(InCombatLockdown()) .. " | Hide outside combat: " .. tostring(BoomkinBuffWatcherDB.hideOutOfCombat) .. " | Frame shown: " .. tostring(frame:IsShown()))
         local ok, aura = pcall(C_UnitAuras.GetPlayerAuraBySpellID, MOTW_SPELL_ID)
         if ok then
             print("|cff9370DBBoomkinBuffWatcher|r Mark of the Wild: " .. (aura and "present" or "MISSING"))
@@ -365,13 +497,25 @@ SlashCmdList["BOOMKINBUFFWATCHER"] = function(msg)
         else
             print("|cff9370DBBoomkinBuffWatcher|r Learn mode OFF.")
         end
+    elseif msg == "reset" then
         BoomkinBuffWatcherDB.point = "CENTER"
         BoomkinBuffWatcherDB.x = 0
         BoomkinBuffWatcherDB.y = -150
         frame:ClearAllPoints()
         frame:SetPoint("CENTER", UIParent, "CENTER", 0, -150)
+        BoomkinBuffWatcherDB.motwPoint = "CENTER"
+        BoomkinBuffWatcherDB.motwX = 110
+        BoomkinBuffWatcherDB.motwY = -100
+        motwFrame:ClearAllPoints()
+        motwFrame:SetPoint("CENTER", UIParent, "CENTER", 110, -100)
         print("|cff9370DBBoomkinBuffWatcher|r Position reset.")
+    elseif msg == "config" then
+        if Settings and Settings.OpenToCategory and settingsCategory then
+            Settings.OpenToCategory(settingsCategory:GetID())
+        else
+            print("|cff9370DBBoomkinBuffWatcher|r couldn't open settings automatically - check Options > AddOns > Boomkin Buff Watcher manually.")
+        end
     else
-        print("|cff9370DBBoomkinBuffWatcher|r Commands: /bbw debug, /bbw learn, /bbw reset")
+        print("|cff9370DBBoomkinBuffWatcher|r Commands: /bbw debug, /bbw learn, /bbw reset, /bbw config")
     end
 end
