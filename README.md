@@ -82,7 +82,17 @@ and combat-data restrictions rather than around them:
 
 ## Support
 
-If you'd like to support development, check the NerdyBertie Ko-fi page.
+If you'd like to support development, check the NerdyBertie Ko-fi page, or my socials:
+
+Ko-fi:        [ko-fi](https://ko-fi.com/nerdybertie)
+Discord:      [NerdyBertie's Tinker Workshop Discord](https://discord.gg/NcASqUUGb)
+TikTok:       [Tiktok](https://www.tiktok.com/@nerdybertie)
+YouTube:      [Youtube](https://www.youtube.com/@nerdybertie)
+Curseforge:   [Curseforge](https://www.curseforge.com/members/nerdybertie/projects)
+WoWInterFace: [WoWInterface](https://www.wowinterface.com/downloads/author-357419.html)
+Wago:         [Wago](https://addons.wago.io/user/NerdyBertie)
+
+
 
 ## License
 
