@@ -3,6 +3,7 @@
 ## Notes: Astral Power, Eclipse window, and buff tracking for Balance Druids.
 ## Author: NerdyBertie
 ## Version: @project-version@
+## Category: NerdyBertie
 ## IconTexture: Interface\AddOns\BoomkinBuffWatcher\Media\icon
 ## SavedVariables: BoomkinBuffWatcherDB
 ## X-Curse-Project-ID: 1699600
