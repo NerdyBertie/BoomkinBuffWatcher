@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.1 (Unreleased)
+- Added an addon-list icon (`Media/icon.tga`), set via the TOC's
+  `IconTexture` field. Note: this needs a full game restart to appear,
+  not just `/reload`, since it's a new file rather than an edited one
+
 ## 1.1.0
 - Added a settings panel (`/bbw config` or Options > AddOns) with a "Hide
   outside of combat" checkbox — off by default behavior preserved, but now
