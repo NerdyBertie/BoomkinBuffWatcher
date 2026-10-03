@@ -1,3 +1,4 @@
+<p align=center><img width="256" height="256" alt="boomkin-icon-256" src="https://github.com/user-attachments/assets/94ab1089-3847-4c6d-9feb-ef9b0d7fd5db" /></p>
 # Boomkin Buff Watcher
 
 A small, focused HUD for Balance Druids. Tracks Astral Power, your current
