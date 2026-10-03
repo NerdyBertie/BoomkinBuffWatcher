@@ -1,6 +1,13 @@
 # Changelog
 
-## 1.1.1 (Unreleased)
+## 1.1.3 (Unreleased)
+- Grouped under the shared "NerdyBertie" category in the AddOn list
+  (`Category` field in the .toc)
+- Settings now live under a shared "NerdyBertie" heading in
+  Options > AddOns, alongside the other NerdyBertie addons, instead of
+  as a standalone entry. `/bbw config` opens it the same as before
+
+## 1.1.1
 - Added an addon-list icon (`Media/icon.tga`), set via the TOC's
   `IconTexture` field. Note: this needs a full game restart to appear,
   not just `/reload`, since it's a new file rather than an edited one

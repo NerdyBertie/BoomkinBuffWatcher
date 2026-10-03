@@ -93,10 +93,30 @@ settingsPanel:SetScript("OnShow", function()
     hideCombatCheck:SetChecked(BoomkinBuffWatcherDB.hideOutOfCombat)
 end)
 
+-- Shared "NerdyBertie" heading in Options > AddOns. Whichever NerdyBertie
+-- addon loads first creates it and stores it in a global; the rest add
+-- themselves underneath. This function is identical across every NerdyBertie
+-- addon on purpose, so don't edit it here without updating the others.
+local function GetBrandCategory()
+    if NerdyBertie_SettingsCategory then return NerdyBertie_SettingsCategory end
+    local panel = CreateFrame("Frame")
+    local heading = panel:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
+    heading:SetPoint("TOPLEFT", 16, -16)
+    heading:SetText("NerdyBertie")
+    local blurb = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    blurb:SetPoint("TOPLEFT", heading, "BOTTOMLEFT", 0, -12)
+    blurb:SetWidth(560)
+    blurb:SetJustifyH("LEFT")
+    blurb:SetText("Addons from the NerdyBertie workshop. Pick one from the list on the left to see its settings.")
+    local category = Settings.RegisterCanvasLayoutCategory(panel, "NerdyBertie")
+    Settings.RegisterAddOnCategory(category)
+    NerdyBertie_SettingsCategory = category
+    return category
+end
+
 local settingsCategory
-if Settings and Settings.RegisterCanvasLayoutCategory then
-    settingsCategory = Settings.RegisterCanvasLayoutCategory(settingsPanel, settingsPanel.name)
-    Settings.RegisterAddOnCategory(settingsCategory)
+if Settings and Settings.RegisterCanvasLayoutSubcategory then
+    settingsCategory = Settings.RegisterCanvasLayoutSubcategory(GetBrandCategory(), settingsPanel, settingsPanel.name)
 end
 
 -- ============================================================
