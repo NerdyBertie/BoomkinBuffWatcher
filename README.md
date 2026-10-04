@@ -41,7 +41,7 @@ before a pull, not during one.
 
 ## Settings
 
-Open with `/bbw config`, or via Options > AddOns > Boomkin Buff Watcher.
+Open with `/bbw config`, or via Options > AddOns > NerdyBertie > Boomkin Buff Watcher.
 
 - **Hide outside of combat** — on by default. Turn this off if you want
   the Astral Power/Eclipse HUD visible all the time, e.g. to reposition it

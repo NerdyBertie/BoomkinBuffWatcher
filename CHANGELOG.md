@@ -1,11 +1,19 @@
 # Changelog
 
-## 1.1.3 (Unreleased)
-- Grouped under the shared "NerdyBertie" category in the AddOn list
-  (`Category` field in the .toc)
+## 1.1.5 (Unreleased)
+- The shared NerdyBertie settings page is now the "NerdyBertie's Addon
+  Workshop" page: it shows the workshop mascot (`Media/workshop.tga`) and a
+  list of the addons in the family, marking the ones you have installed.
+  `/bbw config` opens this addon's settings the same as before
+
+## 1.1.4
 - Settings now live under a shared "NerdyBertie" heading in
   Options > AddOns, alongside the other NerdyBertie addons, instead of
-  as a standalone entry. `/bbw config` opens it the same as before
+  as a standalone entry
+
+## 1.1.3
+- Grouped under the shared "NerdyBertie" category in the AddOn list
+  (`Category` field in the .toc)
 
 ## 1.1.1
 - Added an addon-list icon (`Media/icon.tga`), set via the TOC's
