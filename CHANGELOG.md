@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.1.5 (Unreleased)
+## 1.1.5
 - The shared NerdyBertie settings page is now the "NerdyBertie's Addon
   Workshop" page: it shows the workshop mascot (`Media/workshop.tga`) and a
   list of the addons in the family, marking the ones you have installed.
