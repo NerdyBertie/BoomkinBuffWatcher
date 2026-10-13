@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.6 (Unreleased)
+- Fixed the HUD appearing (and flashing) on non-Druid characters. Spec 1 on
+  other classes, such as Arcane Mage, was being mistaken for Balance. The
+  addon now stays completely hidden unless you're a Balance Druid
+- Fixed the addon list on the NerdyBertie's Addon Workshop page sometimes
+  showing up blank, depending on how Options was opened. It now fills in
+  as soon as the page is built and refreshes every time it's shown
+
 ## 1.1.5
 - The shared NerdyBertie settings page is now the "NerdyBertie's Addon
   Workshop" page: it shows the workshop mascot (`Media/workshop.tga`) and a

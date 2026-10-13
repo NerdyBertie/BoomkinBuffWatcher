@@ -9,11 +9,6 @@ local ADDON_NAME = ...
 
 local BALANCE_SPEC_ID = 1 -- Balance is spec index 1 for Druids (Balance, Feral, Guardian, Restoration)
 
-local function IsBalanceSpec()
-    local specIndex = GetSpecialization()
-    return specIndex == BALANCE_SPEC_ID
-end
-
 -- Mark of the Wild is available to every Druid spec, not just Balance — a
 -- player who respecs into Restoration, Guardian, or Feral still wants to know
 -- if it's up. So this checks class rather than spec, separately from the
@@ -21,6 +16,12 @@ end
 local function IsDruid()
     local _, class = UnitClass("player")
     return class == "DRUID"
+end
+
+-- Spec index 1 exists on every class (Arcane Mage, Arms Warrior, ...), so the
+-- class must be checked too or the HUD shows up on non-Druids.
+local function IsBalanceSpec()
+    return IsDruid() and GetSpecialization() == BALANCE_SPEC_ID
 end
 
 local SOLAR_TRIGGER = "Wrath"
@@ -136,12 +137,16 @@ local function GetBrandCategory()
     footer:SetWidth(560)
     footer:SetJustifyH("LEFT")
     footer:SetText("Find them all on CurseForge, Wago, and WoWInterface. Pick an installed one from the list on the left to see its settings.")
-    panel:SetScript("OnShow", function()
+    local function RefreshList()
         for i, line in ipairs(lines) do
             local loaded = C_AddOns and C_AddOns.IsAddOnLoaded(line.addon.folder)
-            line:SetText(i .. ". " .. line.addon.name .. (loaded and "  |cff33ff33(installed)|r" or ""))
+            line:SetText(i .. ". " .. line.addon.name
+                .. (loaded and "  |cff33ff33(installed)|r" or ""))
         end
-    end)
+    end
+    RefreshList()
+    panel:SetScript("OnShow", RefreshList)
+    panel:Hide()
     local category = Settings.RegisterCanvasLayoutCategory(panel, "NerdyBertie")
     Settings.RegisterAddOnCategory(category)
     NerdyBertie_SettingsCategory = category
