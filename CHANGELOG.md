@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.1.6 (Unreleased)
+## 1.1.6
 - Fixed the HUD appearing (and flashing) on non-Druid characters. Spec 1 on
   other classes, such as Arcane Mage, was being mistaken for Balance. The
   addon now stays completely hidden unless you're a Balance Druid
