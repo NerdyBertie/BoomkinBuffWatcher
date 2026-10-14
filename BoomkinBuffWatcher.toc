@@ -1,4 +1,4 @@
-## Interface: 120100
+## Interface: 120100, 120105
 ## Title: Boomkin Buff Watcher
 ## Notes: Astral Power, Eclipse window, and buff tracking for Balance Druids.
 ## Author: NerdyBertie
