@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.8
+- Added HandyNotes: Seeking the Soulstones to the addon list on the
+  NerdyBertie's Addon Workshop page
+
+## 1.1.7
+- Updated for game patch 12.1.5. The addon now loads on both 12.1 and 12.1.5
+
 ## 1.1.6
 - Fixed the HUD appearing (and flashing) on non-Druid characters. Spec 1 on
   other classes, such as Arcane Mage, was being mistaken for Balance. The

@@ -102,6 +102,7 @@ end)
 -- from this addon's own Media folder.
 local WORKSHOP_ADDONS = {
     { name = "HandyNotes: Dive Bar Front Crawl", folder = "HandyNotes_DiveBarCrawl" },
+    { name = "HandyNotes: Seeking the Soulstones", folder = "HandyNotes_SeekingTheSoulstones" },
     { name = "ItemWatch",                        folder = "ItemWatch" },
     { name = "Boomkin Buff Watcher",             folder = "BoomkinBuffWatcher" },
     { name = "Holiday Herald",                   folder = "HolidayHerald" },
