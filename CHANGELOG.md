@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.9
+- The NerdyBertie page in Options > AddOns now lists Pinkies Up!, a
+  tea-sipping fish who says grats for every achievement
+
 ## 1.1.8
 - Added HandyNotes: Seeking the Soulstones to the addon list on the
   NerdyBertie's Addon Workshop page
