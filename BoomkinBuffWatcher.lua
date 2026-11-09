@@ -107,6 +107,7 @@ local WORKSHOP_ADDONS = {
     { name = "Boomkin Buff Watcher",             folder = "BoomkinBuffWatcher" },
     { name = "Holiday Herald",                   folder = "HolidayHerald" },
     { name = "Pinkies Up!",                      folder = "PinkiesUp" },
+    { name = "Chum Chimes",                      folder = "ChumChimes" },
 }
 
 local function GetBrandCategory()

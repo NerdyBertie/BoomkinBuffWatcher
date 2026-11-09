@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.10
+- The NerdyBertie page in Options > AddOns now lists Chum Chimes, which plays
+  a friendly chime when guildies or friends are in your zone or right near you
+
 ## 1.1.9
 - The NerdyBertie page in Options > AddOns now lists Pinkies Up!, a
   tea-sipping fish who says grats for every achievement
