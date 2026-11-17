@@ -24,7 +24,7 @@ before a pull, not during one.
   only covers the top 10%, so the widget's own rendering does the work
 - **Eclipse window** — shows "Solar", "Lunar", or "Celestial" with a live
   countdown and a radial cooldown-swipe timer whenever one is active.
-  Detected from your own casts (Wrath, Starfire, Celestial Alignment,
+  Detected from your own casts (Solar Eclipse, Lunar Eclipse, Celestial Alignment,
   Incarnation: Chosen of Elune) rather than read off the buff itself
 - **Mark of the Wild reminder** — a small, independently draggable icon
   that appears only when the buff is missing. Works for any Druid spec and

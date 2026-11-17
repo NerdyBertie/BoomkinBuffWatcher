@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.11
+- Fixed the Eclipse window for 12.1, where Eclipse is its own button. The
+  window now starts when you cast Solar Eclipse or Lunar Eclipse, instead of
+  on every Wrath or Starfire cast, which showed a false Eclipse
+- Added `/bbw casts`, which prints the name of each spell you cast, to help
+  confirm spell names if Blizzard changes them again
+
 ## 1.1.10
 - The NerdyBertie page in Options > AddOns now lists Chum Chimes, which plays
   a friendly chime when guildies or friends are in your zone or right near you

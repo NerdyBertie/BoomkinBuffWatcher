@@ -24,8 +24,10 @@ local function IsBalanceSpec()
     return IsDruid() and GetSpecialization() == BALANCE_SPEC_ID
 end
 
-local SOLAR_TRIGGER = "Wrath"
-local LUNAR_TRIGGER = "Starfire"
+-- Eclipse is its own button now, so the window starts when that spell is cast
+-- (not on Wrath/Starfire, which would show a false Eclipse on every cast).
+local SOLAR_TRIGGER = "Solar Eclipse"
+local LUNAR_TRIGGER = "Lunar Eclipse"
 local CELESTIAL_TRIGGERS = {
     ["Celestial Alignment"] = 15,
     ["Incarnation: Chosen of Elune"] = 20,
@@ -343,6 +345,7 @@ end
 -- values into WATCHED_PROCS above instead of guessing. Only reliable out of
 -- combat, same as the rest of this file's aura reads.
 local learnModeActive = false
+local castLogActive = false -- /bbw casts: prints the name of each spell you cast
 local learnFrame = CreateFrame("Frame")
 learnFrame:RegisterEvent("UNIT_AURA")
 learnFrame:SetScript("OnEvent", function(self, event, unit)
@@ -521,6 +524,9 @@ frame:SetScript("OnEvent", function(self, event, unit, ...)
     elseif event == "UNIT_SPELLCAST_SUCCEEDED" and unit == "player" then
         local castGUID, spellID = ...
         local spellName = spellID and C_Spell.GetSpellName(spellID)
+        if castLogActive and spellName then
+            print("|cff9370DBBoomkinBuffWatcher|r Cast: " .. spellName .. " (spellID " .. tostring(spellID) .. ")")
+        end
         if spellName then
             OnCastSucceeded(spellName)
         end
@@ -559,6 +565,13 @@ SlashCmdList["BOOMKINBUFFWATCHER"] = function(msg)
         else
             print("|cff9370DBBoomkinBuffWatcher|r Learn mode OFF.")
         end
+    elseif msg == "casts" then
+        castLogActive = not castLogActive
+        if castLogActive then
+            print("|cff9370DBBoomkinBuffWatcher|r Cast log ON - each spell you cast prints its name. Run '/bbw casts' again to turn off.")
+        else
+            print("|cff9370DBBoomkinBuffWatcher|r Cast log OFF.")
+        end
     elseif msg == "reset" then
         BoomkinBuffWatcherDB.point = "CENTER"
         BoomkinBuffWatcherDB.x = 0
@@ -578,6 +591,6 @@ SlashCmdList["BOOMKINBUFFWATCHER"] = function(msg)
             print("|cff9370DBBoomkinBuffWatcher|r couldn't open settings automatically - check Options > AddOns > Boomkin Buff Watcher manually.")
         end
     else
-        print("|cff9370DBBoomkinBuffWatcher|r Commands: /bbw debug, /bbw learn, /bbw reset, /bbw config")
+        print("|cff9370DBBoomkinBuffWatcher|r Commands: /bbw debug, /bbw learn, /bbw casts, /bbw reset, /bbw config")
     end
 end
