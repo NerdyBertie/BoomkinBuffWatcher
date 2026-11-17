@@ -1,9 +1,14 @@
 # Changelog
 
+## 1.1.12
+- Fixed the Eclipse window not showing when you press Eclipse on 12.1. It
+  now starts when the Eclipse spell is cast (matched by its spell ID, so
+  it doesn't depend on the spell's name), and shows a plain "Eclipse"
+  countdown
+
 ## 1.1.11
-- Fixed the Eclipse window for 12.1, where Eclipse is its own button. The
-  window now starts when you cast Eclipse (matched by its spell ID), instead
-  of on every Wrath or Starfire cast, which showed a false Eclipse
+- Eclipse is its own button on 12.1, so the Eclipse window no longer starts
+  on every Wrath or Starfire cast, which showed a false Eclipse
 - Added `/bbw casts`, which prints the name of each spell you cast, to help
   confirm spell names if Blizzard changes them again
 
