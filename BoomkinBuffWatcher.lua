@@ -33,6 +33,9 @@ local CELESTIAL_TRIGGERS = {
     ["Incarnation: Chosen of Elune"] = 20,
 }
 local ECLIPSE_DURATION = 15
+-- The Eclipse button itself, matched by spell ID so it doesn't depend on the
+-- spell's display name. Shown as a plain "Eclipse" window.
+local ECLIPSE_BUTTON_ID = 1233272
 
 -- The "or {}" below only helps a brand-new install with no saved table at
 -- all. An EXISTING saved table (from a version before this field existed)
@@ -412,6 +415,7 @@ local function RefreshEclipseText()
         local remaining = math.max(0, math.floor(windowExpiry - GetTime()))
         local label = (windowType == "SOLAR" and "Solar")
             or (windowType == "LUNAR" and "Lunar")
+            or (windowType == "ECLIPSE" and "Eclipse")
             or "Celestial"
         eclipseText:SetText(label .. " (" .. remaining .. "s)")
 
@@ -419,6 +423,8 @@ local function RefreshEclipseText()
             eclipseText:SetTextColor(1, 0.8, 0.2)
         elseif windowType == "LUNAR" then
             eclipseText:SetTextColor(0.5, 0.6, 1)
+        elseif windowType == "ECLIPSE" then
+            eclipseText:SetTextColor(1, 0.9, 0.6)
         else
             eclipseText:SetTextColor(0.9, 0.5, 1)
         end
@@ -527,7 +533,10 @@ frame:SetScript("OnEvent", function(self, event, unit, ...)
         if castLogActive and spellName then
             print("|cff9370DBBoomkinBuffWatcher|r Cast: " .. spellName .. " (spellID " .. tostring(spellID) .. ")")
         end
-        if spellName then
+        if spellID == ECLIPSE_BUTTON_ID then
+            StartWindow("ECLIPSE", ECLIPSE_DURATION)
+            RefreshEclipseText()
+        elseif spellName then
             OnCastSucceeded(spellName)
         end
     end
