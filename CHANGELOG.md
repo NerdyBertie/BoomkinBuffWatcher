@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.13
+- Updated for game patch 12.1.7. The addon now loads on 12.1, 12.1.5 and
+  12.1.7
+
 ## 1.1.12
 - Fixed the Eclipse window not showing when you press Eclipse on 12.1. It
   now starts when the Eclipse spell is cast (matched by its spell ID, so
