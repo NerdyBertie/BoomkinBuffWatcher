@@ -82,9 +82,22 @@ and combat-data restrictions rather than around them:
   automatically
 - Distribution: CurseForge, WoWInterface, Wago, WowUp, GitHub Releases
 
+## More from NerdyBertie
+
+If you enjoy this addon, feel free to check out my other addons!
+
+- [Holiday Herald](https://www.curseforge.com/wow/addons/holidayherald): never miss a holiday again; tips, collectibles, quests, map pins, and secrets for every in-game holiday
+- [HandyNotes: Dive Bar Front Crawl](https://www.curseforge.com/wow/addons/handynotes-dive-bar-front-crawl): map pins for every underwater Tortollan dive bar in the Dive Bar Front Crawl housing endeavor
+- [HandyNotes: Seeking The Soulstones](https://www.curseforge.com/wow/addons/handynotes-seeking-the-soulstones): map pins for the soulstones in Outland for the Warlock Green Fire questchain
+- [ItemWatch & Shopping List](https://www.curseforge.com/wow/addons/itemwatch-bag-item-counter): track how many of an item you have toward a goal, with a recipe shopping list that counts your bags, bank and warband bank
+- [Chum Chimes](https://www.curseforge.com/wow/addons/chumchimes): a friendly chime when guildies or friends are in your zone or nearby
+- [Pinkies Up!](https://www.curseforge.com/wow/addons/pinkies-up): achievement gratses for everyone, with 40-plus cute sayings
+
+Find them all by searching NerdyBertie on CurseForge, WoWInterface, WoWUp, or Wago.
+
 ## Support
 
-If you'd like to support development, check the NerdyBertie Ko-fi page.
+If you find this addon, or any of my other addons, useful, consider supporting me on [Ko-fi](https://ko-fi.com/nerdybertie) — totally optional, but always appreciated! You can also find me on [Twitch](https://www.twitch.tv/nerdybertie), [TikTok](https://www.tiktok.com/@nerdybertie), [YouTube](https://www.youtube.com/@nerdybertie), or [Discord](https://discord.com/invite/bXbMR6rzcF) - NerdyBertie
 
 ## License
 
